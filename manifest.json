@@ -1,0 +1,14 @@
+{
+  "name": "vCard QR Generator",
+  "short_name": "vCard QR",
+  "description": "Generate QR codes from your contact info with selective field sharing",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0e0f11",
+  "theme_color": "#5b8aff",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
