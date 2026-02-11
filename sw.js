@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vcard-qr-v2';
+const CACHE_NAME = 'vcard-qr-v3';
 const ASSETS = [
   '/',
   '/manifest.json',

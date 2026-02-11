@@ -519,6 +519,22 @@ const fields = [
   { id: 'note',       label: 'Note' },
 ];
 
+// Restore saved form data from localStorage
+try {
+  const saved = JSON.parse(localStorage.getItem('vcard-data'));
+  if (saved) fields.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (el && saved[f.id] != null) el.value = saved[f.id];
+  });
+} catch {}
+
+// Save form data on every input change
+document.getElementById('panel-0').addEventListener('input', () => {
+  const data = {};
+  fields.forEach(f => { data[f.id] = document.getElementById(f.id).value; });
+  localStorage.setItem('vcard-data', JSON.stringify(data));
+});
+
 let qr = null;
 
 function switchTab(idx) {
