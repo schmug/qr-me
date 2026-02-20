@@ -519,20 +519,83 @@ const fields = [
   { id: 'note',       label: 'Note' },
 ];
 
-// Restore saved form data from localStorage
-try {
-  const saved = JSON.parse(localStorage.getItem('vcard-data'));
-  if (saved) fields.forEach(f => {
+// --- Persistent storage: IndexedDB primary, localStorage fallback ---
+const DB_NAME = 'qrme';
+const DB_STORE = 'formdata';
+const DB_KEY = 'vcard-data';
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(DB_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function idbGet(key) {
+  return openDB().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readonly');
+    const req = tx.objectStore(DB_STORE).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  }));
+}
+
+function idbSet(key, val) {
+  return openDB().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).put(val, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  }));
+}
+
+function getFormData() { const d = {}; fields.forEach(f => { d[f.id] = document.getElementById(f.id).value; }); return d; }
+
+function populateForm(saved) {
+  if (!saved) return;
+  fields.forEach(f => {
     const el = document.getElementById(f.id);
     if (el && saved[f.id] != null) el.value = saved[f.id];
   });
-} catch {}
+}
 
-// Save form data on every input change
+// Request persistent storage so the browser won't evict our data
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist();
+}
+
+// Restore: try IndexedDB first, fall back to localStorage, migrate if needed
+(async () => {
+  try {
+    let saved = await idbGet(DB_KEY);
+    if (!saved) {
+      // Migrate from localStorage if present
+      try {
+        const ls = JSON.parse(localStorage.getItem('vcard-data'));
+        if (ls) { saved = ls; await idbSet(DB_KEY, ls); }
+      } catch {}
+    }
+    populateForm(saved);
+  } catch {
+    // IndexedDB unavailable, fall back to localStorage
+    try {
+      populateForm(JSON.parse(localStorage.getItem('vcard-data')));
+    } catch {}
+  }
+})();
+
+// Save on every input change — write to both IndexedDB and localStorage
+let saveTimer = null;
 document.getElementById('panel-0').addEventListener('input', () => {
-  const data = {};
-  fields.forEach(f => { data[f.id] = document.getElementById(f.id).value; });
-  localStorage.setItem('vcard-data', JSON.stringify(data));
+  const data = getFormData();
+  // Debounce saves to avoid hammering storage
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try { localStorage.setItem('vcard-data', JSON.stringify(data)); } catch {}
+    idbSet(DB_KEY, data).catch(() => {});
+  }, 300);
 });
 
 let qr = null;
