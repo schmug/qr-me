@@ -49,6 +49,57 @@ const FIELD_REGISTRY = {
   homeCountry: { label: 'Country',           category: 'home-address', inputType: 'text',     placeholder: 'USA',                 vcardProp: null },
 };
 
+// --- Profile Colors ------------------------------------------------------------
+
+const PROFILE_COLORS = [
+  '#3b4856', '#2b5c8a', '#4a4e9a', '#6b4c8a', '#8a3c5c',
+  '#8a4a2b', '#4a6a3b', '#2b6b6b', '#4a5568', '#2d3250'
+];
+
+function darkenColor(hex, factor) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const dr = Math.round(r * (1 - factor));
+  const dg = Math.round(g * (1 - factor));
+  const db = Math.round(b * (1 - factor));
+  return '#' + [dr, dg, db].map(c => c.toString(16).padStart(2, '0')).join('');
+}
+
+function applyProfileColor(hex) {
+  document.documentElement.style.setProperty('--profile-color', hex);
+  document.documentElement.style.setProperty('--profile-bg', darkenColor(hex, 0.65));
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', darkenColor(hex, 0.4));
+}
+
+function buildColorPicker(selectedColor) {
+  const picker = document.getElementById('colorPicker');
+  if (!picker) return;
+  picker.replaceChildren();
+
+  PROFILE_COLORS.forEach(color => {
+    const swatch = document.createElement('button');
+    swatch.className = 'color-swatch' + (color === selectedColor ? ' selected' : '');
+    swatch.style.background = color;
+    swatch.dataset.color = color;
+    swatch.setAttribute('aria-label', color);
+    swatch.addEventListener('click', () => selectColor(color));
+    picker.appendChild(swatch);
+  });
+}
+
+function selectColor(color) {
+  applyProfileColor(color);
+  if (activeProfile) {
+    activeProfile.profileColor = color;
+    saveProfile(activeProfile);
+  }
+  document.querySelectorAll('.color-swatch').forEach(s => {
+    s.classList.toggle('selected', s.dataset.color === color);
+  });
+}
+
 const CATEGORY_LABELS = {
   personal: 'Personal',
   contact: 'Contact',
@@ -232,6 +283,7 @@ async function createProfile(name, presetKey) {
     fields: {},
     selectedFields: [],
     fieldOrder: preset.fields.slice(),
+    profileColor: PROFILE_COLORS[Math.floor(Math.random() * PROFILE_COLORS.length)],
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
@@ -280,6 +332,22 @@ async function loadActiveProfile() {
 function renderForm(profile) {
   const container = document.getElementById('formContainer');
   container.textContent = '';
+
+  // Color picker card (always first)
+  const colorCard = document.createElement('div');
+  colorCard.className = 'card';
+  const colorTitle = document.createElement('div');
+  colorTitle.className = 'card-title';
+  colorTitle.textContent = 'Theme';
+  colorCard.appendChild(colorTitle);
+  const colorPickerEl = document.createElement('div');
+  colorPickerEl.className = 'color-picker';
+  colorPickerEl.id = 'colorPicker';
+  colorCard.appendChild(colorPickerEl);
+  container.appendChild(colorCard);
+
+  // Build color swatches
+  buildColorPicker(profile.profileColor);
 
   // Group fields by category (preserving fieldOrder)
   const categories = {};
@@ -513,6 +581,7 @@ async function switchProfile(profileId) {
   await setAppState('activeProfileId', profileId);
   await setAppState('lastUsedProfileId', profileId);
 
+  if (activeProfile.profileColor) applyProfileColor(activeProfile.profileColor);
   renderForm(activeProfile);
   await renderProfileBar();
   switchTab(0);
@@ -1361,6 +1430,13 @@ async function init() {
 
   // Load active profile
   await loadActiveProfile();
+
+  // Apply profile color (assign random if migrated profile lacks one)
+  if (!activeProfile.profileColor) {
+    activeProfile.profileColor = PROFILE_COLORS[Math.floor(Math.random() * PROFILE_COLORS.length)];
+    await saveProfile(activeProfile);
+  }
+  applyProfileColor(activeProfile.profileColor);
 
   // Render UI
   renderForm(activeProfile);
