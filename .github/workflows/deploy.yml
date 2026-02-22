@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  release:
+    types: [published]
 
 jobs:
   deploy:
@@ -15,6 +17,35 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || github.sha }}
+          fetch-tags: true
+
+      - name: Determine version
+        id: version
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          SHORT_SHA=$(git rev-parse --short=7 HEAD)
+
+          if [ -n "$LATEST_TAG" ]; then
+            echo "version=$LATEST_TAG" >> "$GITHUB_OUTPUT"
+            echo "display=${LATEST_TAG} (${SHORT_SHA})" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=$SHORT_SHA" >> "$GITHUB_OUTPUT"
+            echo "display=$SHORT_SHA" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Inject version into index.html
+        env:
+          APP_VERSION_DISPLAY: ${{ steps.version.outputs.display }}
+        run: |
+          sed -i "s|__APP_VERSION_DISPLAY__|${APP_VERSION_DISPLAY}|g" index.html
+
+      - name: Align service worker cache version
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          sed -i "s|vcard-qr-v4|vcard-qr-${APP_VERSION}|g" sw.js
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

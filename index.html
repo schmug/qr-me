@@ -348,6 +348,44 @@
     .row { flex-direction: column; gap: 0; }
     body { padding: 1rem 0.75rem; }
   }
+
+  .app-footer {
+    text-align: center;
+    padding: 2rem 0 0.5rem;
+  }
+
+  .version-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.3rem 0.7rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 400;
+    text-decoration: none;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .version-badge:hover {
+    border-color: var(--accent);
+    color: var(--text);
+    background: var(--accent-glow);
+  }
+
+  .version-badge::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+  }
 </style>
 </head>
 <body>
@@ -499,6 +537,10 @@
     </details>
   </div>
 </div>
+
+<footer class="app-footer">
+  <a href="https://github.com/schmug/qr-me/releases" target="_blank" rel="noopener" class="version-badge" title="View release notes">__APP_VERSION_DISPLAY__</a>
+</footer>
 
 <script>
 const fields = [
