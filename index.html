@@ -6,456 +6,37 @@
 <meta name="theme-color" content="#5b8aff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="vCard QR">
+<meta name="apple-mobile-web-app-title" content="QR Me">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>vCard QR Generator</title>
+<title>QR Me</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0e0f11;
-    --surface: #17181c;
-    --surface2: #1e2025;
-    --border: #2a2c33;
-    --border-focus: #5b8aff;
-    --text: #e4e5e9;
-    --text-dim: #8b8d97;
-    --accent: #5b8aff;
-    --accent-glow: rgba(91, 138, 255, 0.15);
-    --green: #4ade80;
-    --red: #f87171;
-    --radius: 10px;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 2rem 1rem;
-    background-image:
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(91,138,255,0.08), transparent),
-      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(74,222,128,0.04), transparent);
-  }
-
-  .container {
-    max-width: 520px;
-    margin: 0 auto;
-  }
-
-  header {
-    text-align: center;
-    margin-bottom: 2.5rem;
-  }
-
-  header h1 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    margin-bottom: 0.3rem;
-  }
-
-  header h1 span { color: var(--accent); }
-
-  header p {
-    color: var(--text-dim);
-    font-size: 0.88rem;
-    font-weight: 300;
-  }
-
-  .tabs {
-    display: flex;
-    gap: 2px;
-    background: var(--surface);
-    border-radius: var(--radius);
-    padding: 3px;
-    margin-bottom: 1.5rem;
-    border: 1px solid var(--border);
-  }
-
-  .tab {
-    flex: 1;
-    padding: 0.6rem;
-    text-align: center;
-    font-size: 0.82rem;
-    font-weight: 500;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: var(--text-dim);
-    user-select: none;
-  }
-
-  .tab:hover { color: var(--text); }
-
-  .tab.active {
-    background: var(--accent);
-    color: #fff;
-    box-shadow: 0 2px 12px rgba(91,138,255,0.3);
-  }
-
-  .tab .num {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px; height: 18px;
-    border-radius: 50%;
-    font-size: 0.7rem;
-    margin-right: 6px;
-    background: rgba(255,255,255,0.1);
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .tab.active .num { background: rgba(255,255,255,0.25); }
-
-  .panel { display: none; animation: fadeIn 0.25s ease; }
-  .panel.active { display: block; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-  }
-
-  .card-title {
-    font-size: 0.72rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-dim);
-    margin-bottom: 1rem;
-  }
-
-  .field { margin-bottom: 0.9rem; }
-  .field:last-child { margin-bottom: 0; }
-
-  .field label {
-    display: block;
-    font-size: 0.78rem;
-    color: var(--text-dim);
-    margin-bottom: 0.35rem;
-    font-weight: 500;
-  }
-
-  .field input, .field textarea {
-    width: 100%;
-    padding: 0.6rem 0.75rem;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.88rem;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-
-  .field input:focus, .field textarea:focus {
-    border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px var(--accent-glow);
-  }
-
-  .field input::placeholder, .field textarea::placeholder {
-    color: #50525a;
-  }
-
-  .field textarea {
-    resize: vertical;
-    min-height: 60px;
-  }
-
-  .row { display: flex; gap: 0.75rem; }
-  .row .field { flex: 1; }
-
-  /* Share panel */
-  .share-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.7rem 0.75rem;
-    border-radius: 8px;
-    margin-bottom: 4px;
-    transition: background 0.15s;
-    cursor: pointer;
-  }
-
-  .share-item:hover { background: var(--surface2); }
-
-  .share-item input[type="checkbox"] {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 18px; height: 18px;
-    border: 2px solid var(--border);
-    border-radius: 5px;
-    cursor: pointer;
-    position: relative;
-    flex-shrink: 0;
-    transition: all 0.15s;
-  }
-
-  .share-item input[type="checkbox"]:checked {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
-
-  .share-item input[type="checkbox"]:checked::after {
-    content: '✓';
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-  }
-
-  .share-label { flex: 1; }
-
-  .share-label .key {
-    font-size: 0.82rem;
-    font-weight: 500;
-  }
-
-  .share-label .val {
-    font-size: 0.78rem;
-    color: var(--text-dim);
-    font-family: 'JetBrains Mono', monospace;
-    margin-top: 1px;
-    word-break: break-all;
-  }
-
-  .share-label .empty {
-    color: #50525a;
-    font-style: italic;
-    font-family: 'DM Sans', sans-serif;
-  }
-
-  .select-controls {
-    display: flex;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .select-controls button {
-    background: none;
-    border: none;
-    color: var(--accent);
-    font-size: 0.78rem;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    padding: 0;
-  }
-
-  .select-controls button:hover { text-decoration: underline; }
-
-  /* QR section */
-  .qr-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.25rem;
-    padding: 1.5rem;
-  }
-
-  .qr-box {
-    background: #fff;
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
-  }
-
-  .qr-box canvas, .qr-box img { display: block; border-radius: 4px; }
-
-  .qr-empty {
-    width: 200px; height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 0.5rem;
-    color: #bbb;
-    font-size: 0.82rem;
-    text-align: center;
-  }
-
-  .qr-empty svg { opacity: 0.4; }
-
-  .qr-actions {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .btn {
-    padding: 0.55rem 1.2rem;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-
-  .btn:hover { border-color: var(--accent); background: var(--accent-glow); }
-
-  .btn-primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-
-  .btn-primary:hover {
-    background: #4a7aef;
-    box-shadow: 0 2px 16px rgba(91,138,255,0.3);
-  }
-
-  .vcard-preview {
-    width: 100%;
-    background: var(--surface2);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--text-dim);
-    line-height: 1.5;
-    white-space: pre-wrap;
-    word-break: break-all;
-    max-height: 160px;
-    overflow-y: auto;
-  }
-
-  .field-count {
-    font-size: 0.78rem;
-    color: var(--text-dim);
-    text-align: center;
-  }
-
-  .field-count strong { color: var(--green); }
-
-  @media (max-width: 500px) {
-    .row { flex-direction: column; gap: 0; }
-    body { padding: 1rem 0.75rem; }
-  }
-</style>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
 <div class="container">
+  <div id="profileBar" class="profile-bar" style="display:none;"></div>
+
   <header>
-    <h1>vCard <span>QR</span> Generator</h1>
+    <h1>QR <span>Me</span></h1>
     <p>Enter your info, choose what to share, get a scannable QR code</p>
   </header>
 
   <div class="tabs">
-    <div class="tab active" onclick="switchTab(0)"><span class="num">1</span>Enter Info</div>
-    <div class="tab" onclick="switchTab(1)"><span class="num">2</span>Select Fields</div>
-    <div class="tab" onclick="switchTab(2)"><span class="num">3</span>QR Code</div>
+    <div class="tab active"><span class="num">1</span>Enter Info</div>
+    <div class="tab"><span class="num">2</span>Select Fields</div>
+    <div class="tab"><span class="num">3</span>QR Code</div>
   </div>
 
-  <!-- Panel 1: Enter Info -->
+  <!-- Panel 0: Enter Info (dynamically populated) -->
   <div class="panel active" id="panel-0">
-    <div class="card">
-      <div class="card-title">Personal</div>
-      <div class="row">
-        <div class="field">
-          <label>First Name</label>
-          <input type="text" id="firstName" placeholder="John">
-        </div>
-        <div class="field">
-          <label>Last Name</label>
-          <input type="text" id="lastName" placeholder="Doe">
-        </div>
-      </div>
-      <div class="field">
-        <label>Prefix / Title</label>
-        <input type="text" id="prefix" placeholder="Mr., Dr., etc.">
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Contact</div>
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="email" placeholder="john@example.com">
-      </div>
-      <div class="field">
-        <label>Phone (Cell)</label>
-        <input type="tel" id="phone" placeholder="+1 555-123-4567">
-      </div>
-      <div class="field">
-        <label>Phone (Work)</label>
-        <input type="tel" id="workPhone" placeholder="+1 555-987-6543">
-      </div>
-      <div class="field">
-        <label>Website</label>
-        <input type="url" id="website" placeholder="https://example.com">
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Organization</div>
-      <div class="field">
-        <label>Company / Organization</label>
-        <input type="text" id="org" placeholder="Acme Corp">
-      </div>
-      <div class="field">
-        <label>Job Title</label>
-        <input type="text" id="title" placeholder="Software Engineer">
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Address</div>
-      <div class="field">
-        <label>Street</label>
-        <input type="text" id="street" placeholder="123 Main St">
-      </div>
-      <div class="row">
-        <div class="field">
-          <label>City</label>
-          <input type="text" id="city" placeholder="Raleigh">
-        </div>
-        <div class="field">
-          <label>State</label>
-          <input type="text" id="state" placeholder="NC">
-        </div>
-      </div>
-      <div class="row">
-        <div class="field">
-          <label>Zip Code</label>
-          <input type="text" id="zip" placeholder="27601">
-        </div>
-        <div class="field">
-          <label>Country</label>
-          <input type="text" id="country" placeholder="USA">
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Additional</div>
-      <div class="field">
-        <label>Note</label>
-        <textarea id="note" placeholder="Any additional info..."></textarea>
-      </div>
-    </div>
-
-    <button class="btn btn-primary" style="width:100%;margin-top:0.5rem;" onclick="switchTab(1)">Continue → Select Fields</button>
+    <div id="formContainer"></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:0.5rem;" onclick="switchTab(1)">Continue &#8594; Select Fields</button>
   </div>
 
-  <!-- Panel 2: Select Fields -->
+  <!-- Panel 1: Select Fields -->
   <div class="panel" id="panel-1">
     <div class="card">
       <div class="card-title">Choose what to share</div>
@@ -466,10 +47,10 @@
       <div id="shareList"></div>
     </div>
     <div class="field-count" id="fieldCount"></div>
-    <button class="btn btn-primary" style="width:100%;margin-top:0.75rem;" onclick="switchTab(2)">Generate QR Code →</button>
+    <button class="btn btn-primary" style="width:100%;margin-top:0.75rem;" onclick="switchTab(2)">Generate QR Code &#8594;</button>
   </div>
 
-  <!-- Panel 3: QR Code -->
+  <!-- Panel 2: QR Code -->
   <div class="panel" id="panel-2">
     <div class="card">
       <div class="qr-wrapper">
@@ -487,8 +68,9 @@
           <div id="qrCode"></div>
         </div>
         <div class="qr-actions" id="qrActions" style="display:none;">
-          <button class="btn" onclick="downloadQR()">⬇ Download PNG</button>
-          <button class="btn" onclick="copyVCard()">📋 Copy vCard</button>
+          <button class="btn" onclick="downloadQR()">&#x2B07; Download PNG</button>
+          <button class="btn" data-action="copy-vcard" onclick="copyVCard()">&#x1F4CB; Copy vCard</button>
+          <button class="btn" onclick="shareAsUrl()">&#x1F517; Share Link</button>
         </div>
         <div class="field-count" id="qrFieldCount"></div>
       </div>
@@ -500,274 +82,19 @@
   </div>
 </div>
 
-<script>
-const fields = [
-  { id: 'firstName',  label: 'First Name' },
-  { id: 'lastName',   label: 'Last Name' },
-  { id: 'prefix',     label: 'Prefix' },
-  { id: 'email',      label: 'Email' },
-  { id: 'phone',      label: 'Phone (Cell)' },
-  { id: 'workPhone',  label: 'Phone (Work)' },
-  { id: 'website',    label: 'Website' },
-  { id: 'org',        label: 'Organization' },
-  { id: 'title',      label: 'Job Title' },
-  { id: 'street',     label: 'Street' },
-  { id: 'city',       label: 'City' },
-  { id: 'state',      label: 'State' },
-  { id: 'zip',        label: 'Zip Code' },
-  { id: 'country',    label: 'Country' },
-  { id: 'note',       label: 'Note' },
-];
+<!-- Quick-Show Overlay -->
+<div id="quickShow" class="quick-show-overlay" style="display:none;">
+  <div class="quick-show-content">
+    <div class="quick-show-qr" id="quickShowQR"></div>
+    <div class="quick-show-name" id="quickShowName"></div>
+    <div class="quick-show-hint">Tap to dismiss &#183; Swipe for profiles</div>
+  </div>
+</div>
 
-// --- Persistent storage: IndexedDB primary, localStorage fallback ---
-const DB_NAME = 'qrme';
-const DB_STORE = 'formdata';
-const DB_KEY = 'vcard-data';
+<!-- Share View (hidden, activated by #v= hash) -->
+<div id="shareView" style="display:none;"></div>
 
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = () => req.result.createObjectStore(DB_STORE);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-function idbGet(key) {
-  return openDB().then(db => new Promise((resolve, reject) => {
-    const tx = db.transaction(DB_STORE, 'readonly');
-    const req = tx.objectStore(DB_STORE).get(key);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  }));
-}
-
-function idbSet(key, val) {
-  return openDB().then(db => new Promise((resolve, reject) => {
-    const tx = db.transaction(DB_STORE, 'readwrite');
-    tx.objectStore(DB_STORE).put(val, key);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  }));
-}
-
-function getFormData() { const d = {}; fields.forEach(f => { d[f.id] = document.getElementById(f.id).value; }); return d; }
-
-function populateForm(saved) {
-  if (!saved) return;
-  fields.forEach(f => {
-    const el = document.getElementById(f.id);
-    if (el && saved[f.id] != null) el.value = saved[f.id];
-  });
-}
-
-// Request persistent storage so the browser won't evict our data
-if (navigator.storage && navigator.storage.persist) {
-  navigator.storage.persist();
-}
-
-// Restore: try IndexedDB first, fall back to localStorage, migrate if needed
-(async () => {
-  try {
-    let saved = await idbGet(DB_KEY);
-    if (!saved) {
-      // Migrate from localStorage if present
-      try {
-        const ls = JSON.parse(localStorage.getItem('vcard-data'));
-        if (ls) { saved = ls; await idbSet(DB_KEY, ls); }
-      } catch {}
-    }
-    populateForm(saved);
-  } catch {
-    // IndexedDB unavailable, fall back to localStorage
-    try {
-      populateForm(JSON.parse(localStorage.getItem('vcard-data')));
-    } catch {}
-  }
-})();
-
-// Save on every input change — write to both IndexedDB and localStorage
-let saveTimer = null;
-document.getElementById('panel-0').addEventListener('input', () => {
-  const data = getFormData();
-  // Debounce saves to avoid hammering storage
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    try { localStorage.setItem('vcard-data', JSON.stringify(data)); } catch {}
-    idbSet(DB_KEY, data).catch(() => {});
-  }, 300);
-});
-
-let qr = null;
-
-function switchTab(idx) {
-  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
-  document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', i === idx));
-  if (idx === 1) buildShareList();
-  if (idx === 2) generateQR();
-}
-
-function buildShareList() {
-  const list = document.getElementById('shareList');
-  list.innerHTML = '';
-  let filledCount = 0;
-
-  fields.forEach(f => {
-    const val = document.getElementById(f.id).value.trim();
-    const item = document.createElement('label');
-    item.className = 'share-item';
-
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.dataset.field = f.id;
-    cb.checked = val.length > 0;
-    cb.disabled = val.length === 0;
-    cb.addEventListener('change', updateFieldCount);
-
-    if (val.length > 0) filledCount++;
-
-    const labelDiv = document.createElement('div');
-    labelDiv.className = 'share-label';
-    labelDiv.innerHTML = `<div class="key">${f.label}</div><div class="val">${val ? escapeHtml(val) : '<span class="empty">not entered</span>'}</div>`;
-
-    item.appendChild(cb);
-    item.appendChild(labelDiv);
-    list.appendChild(item);
-  });
-
-  updateFieldCount();
-}
-
-function updateFieldCount() {
-  const checked = document.querySelectorAll('#shareList input[type="checkbox"]:checked').length;
-  const total = document.querySelectorAll('#shareList input[type="checkbox"]:not(:disabled)').length;
-  document.getElementById('fieldCount').innerHTML = `<strong>${checked}</strong> of ${total} fields selected`;
-}
-
-function selectAll() {
-  document.querySelectorAll('#shareList input[type="checkbox"]:not(:disabled)').forEach(cb => cb.checked = true);
-  updateFieldCount();
-}
-
-function selectNone() {
-  document.querySelectorAll('#shareList input[type="checkbox"]').forEach(cb => cb.checked = false);
-  updateFieldCount();
-}
-
-function getSelectedFields() {
-  const selected = {};
-  document.querySelectorAll('#shareList input[type="checkbox"]:checked').forEach(cb => {
-    selected[cb.dataset.field] = document.getElementById(cb.dataset.field).value.trim();
-  });
-  return selected;
-}
-
-function buildVCard(sel) {
-  let v = 'BEGIN:VCARD\nVERSION:3.0\n';
-
-  const ln = sel.lastName || '';
-  const fn = sel.firstName || '';
-  const pfx = sel.prefix || '';
-  if (fn || ln) {
-    v += `N:${ln};${fn};;${pfx};\n`;
-    v += `FN:${[pfx, fn, ln].filter(Boolean).join(' ')}\n`;
-  }
-
-  if (sel.email)     v += `EMAIL;TYPE=INTERNET:${sel.email}\n`;
-  if (sel.phone)     v += `TEL;TYPE=CELL:${sel.phone}\n`;
-  if (sel.workPhone) v += `TEL;TYPE=WORK:${sel.workPhone}\n`;
-  if (sel.website)   v += `URL:${sel.website}\n`;
-  if (sel.org)       v += `ORG:${sel.org}\n`;
-  if (sel.title)     v += `TITLE:${sel.title}\n`;
-
-  const street = sel.street || '';
-  const city = sel.city || '';
-  const state = sel.state || '';
-  const zip = sel.zip || '';
-  const country = sel.country || '';
-  if (street || city || state || zip || country) {
-    v += `ADR;TYPE=WORK:;;${street};${city};${state};${zip};${country}\n`;
-  }
-
-  if (sel.note) v += `NOTE:${sel.note}\n`;
-
-  v += 'END:VCARD';
-  return v;
-}
-
-function generateQR() {
-  const sel = getSelectedFields();
-  const vcard = buildVCard(sel);
-  const checkedCount = Object.keys(sel).length;
-
-  document.getElementById('vcardPreview').textContent = vcard;
-  document.getElementById('qrFieldCount').innerHTML = checkedCount > 0
-    ? `<strong>${checkedCount}</strong> field${checkedCount !== 1 ? 's' : ''} encoded`
-    : '';
-
-  const qrContainer = document.getElementById('qrCode');
-  const emptyEl = document.getElementById('qrEmpty');
-  const actionsEl = document.getElementById('qrActions');
-
-  if (checkedCount === 0) {
-    qrContainer.innerHTML = '';
-    emptyEl.style.display = 'flex';
-    actionsEl.style.display = 'none';
-    return;
-  }
-
-  emptyEl.style.display = 'none';
-  actionsEl.style.display = 'flex';
-  qrContainer.innerHTML = '';
-
-  qr = new QRCode(qrContainer, {
-    text: vcard,
-    width: 200,
-    height: 200,
-    colorDark: '#111111',
-    colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.M,
-  });
-}
-
-function downloadQR() {
-  const canvas = document.querySelector('#qrCode canvas');
-  if (!canvas) return;
-  const padding = 40;
-  const padded = document.createElement('canvas');
-  padded.width = canvas.width + padding * 2;
-  padded.height = canvas.height + padding * 2;
-  const ctx = padded.getContext('2d');
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, padded.width, padded.height);
-  ctx.drawImage(canvas, padding, padding);
-  const link = document.createElement('a');
-  link.download = 'vcard-qr.png';
-  link.href = padded.toDataURL('image/png');
-  link.click();
-}
-
-function copyVCard() {
-  const text = document.getElementById('vcardPreview').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.querySelector('#qrActions .btn:last-child');
-    const orig = btn.textContent;
-    btn.textContent = '✓ Copied!';
-    setTimeout(() => btn.textContent = orig, 1500);
-  });
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-// Register service worker for PWA
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
-</script>
+<script src="app.js"></script>
 
 </body>
 </html>
