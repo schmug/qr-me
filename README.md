@@ -3,7 +3,7 @@ Local QR Code generator PWA for contact card sharing because Google and Apple do
 
 ## Live Demo
 
-**[https://contact-4od.pages.dev](https://contact-4od.pages.dev)**
+**[https://q-r.contact](https://q-r.contact)**
 
 ## How It Works
 
@@ -31,7 +31,7 @@ Everything runs client-side. Your contact data is saved to `localStorage` so you
 
 ## Deployment
 
-Hosted on [Cloudflare Pages](https://pages.cloudflare.com). Since there's no build step, just point the output directory to `/` and deploy.
+Hosted on [Cloudflare Pages](https://pages.cloudflare.com). Pushes to `main` deploy to production at [q-r.contact](https://q-r.contact). Pull requests get automatic preview deployments with unique URLs.
 
 ## License
 
