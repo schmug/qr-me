@@ -461,9 +461,9 @@ header p {
 }
 
 .profile-pill.active {
-  background: var(--accent);
+  background: var(--profile-color);
   color: #fff;
-  border-color: var(--accent);
+  border-color: var(--profile-color);
 }
 
 .profile-pill-add {
