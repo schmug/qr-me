@@ -1,6 +1,9 @@
-const CACHE_NAME = 'vcard-qr-v4';
+const CACHE_NAME = 'vcard-qr-v5';
 const ASSETS = [
   '/',
+  '/index.html',
+  '/app.js',
+  '/styles.css',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
