@@ -800,3 +800,29 @@ header p {
   .row { flex-direction: column; gap: 0; }
   body { padding: 1rem 0.75rem; }
 }
+
+.footer {
+  text-align: center;
+  margin-top: 2.5rem;
+  padding: 1rem 0;
+}
+
+.sponsor-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 400;
+  transition: color 0.2s;
+}
+
+.sponsor-link:hover { color: #db61a2; }
+
+.sponsor-link svg { transition: fill 0.2s, transform 0.2s; }
+
+.sponsor-link:hover svg {
+  fill: #db61a2;
+  transform: scale(1.15);
+}
