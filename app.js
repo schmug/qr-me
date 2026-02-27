@@ -1285,8 +1285,13 @@ async function openQuickShow(profileId) {
   } catch {}
 }
 
+function openFullscreen() {
+  if (activeProfile) openQuickShow(activeProfile.id);
+}
+
 function closeQuickShow() {
   document.getElementById('quickShow').style.display = 'none';
+  document.getElementById('quickShow').style.background = '';
   document.getElementById('quickShowQR').textContent = '';
 
   if (wakeLock) {
@@ -1308,6 +1313,12 @@ function renderQuickShowQR(profile) {
   const container = document.getElementById('quickShowQR');
   container.textContent = '';
   document.getElementById('quickShowName').textContent = profile.name;
+
+  // Set overlay background to match profile color
+  const overlay = document.getElementById('quickShow');
+  overlay.style.background = profile.profileColor
+    ? darkenColor(profile.profileColor, 0.85)
+    : 'rgba(0, 0, 0, 0.95)';
 
   const sel = {};
   (profile.selectedFields || []).forEach(fieldId => {
@@ -1475,6 +1486,7 @@ window.selectNone = selectNone;
 window.downloadQR = downloadQR;
 window.copyVCard = copyVCard;
 window.shareAsUrl = shareAsUrl;
+window.openFullscreen = openFullscreen;
 
 // Start the app
 init().catch(console.error);
